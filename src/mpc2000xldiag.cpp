@@ -177,10 +177,6 @@ QUICKLOAD_LOAD_MEMBER(mpc2000xldiag_state::load_original)
 	std::vector<u8> file(0x80000);
 	if (image.fread(file.data(), file.size()) != file.size())
 		return fail("Short MPC2KXL.BIN read");
-	// Verify even when MAME is invoked directly, bypassing the Python launcher.
-	// if (util::sha1_creator::simple(file.data(), file.size()).as_string() !=
-	// 	"382be688972fe3d85caeca99abff4b6c391347fb")
-	// 	return fail("ROM identity mismatch: expected stock MPC2000XL 1.20; see docs/FIRMWARE.md");
 	u16 sum = 0;
 	for (u32 offset = 0; offset < 0x77ffe; offset += 2)
 		sum += u16(file[offset] | (u16(file[offset + 1]) << 8));

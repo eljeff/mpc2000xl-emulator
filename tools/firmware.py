@@ -25,8 +25,6 @@ def validate(rom, disk=None):
     if rom.stat().st_size != ROM_BYTES:
         raise ValueError('Expected a complete 512 KiB MPC2KXL.BIN, including the boot ROM.')
     data = rom.read_bytes()
-    # if hashlib.sha256(data).hexdigest() != ROM_SHA256:
-    #     raise ValueError('Expected the supported stock MPC2000XL 1.20 BIN; see docs/FIRMWARE.md.')
     rom_digest = hashlib.sha256(data).hexdigest() ## modified sha
     checksum = sum(word[0] for word in struct.iter_unpack('<H', data[:CHECKSUM_OFFSET])) & 0xffff
     stored = struct.unpack_from('<H', data, CHECKSUM_OFFSET)[0]
