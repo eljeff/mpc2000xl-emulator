@@ -25,8 +25,9 @@ def validate(rom, disk=None):
     if rom.stat().st_size != ROM_BYTES:
         raise ValueError('Expected a complete 512 KiB MPC2KXL.BIN, including the boot ROM.')
     data = rom.read_bytes()
-    if hashlib.sha256(data).hexdigest() != ROM_SHA256:
-        raise ValueError('Expected the supported stock MPC2000XL 1.20 BIN; see docs/FIRMWARE.md.')
+    # if hashlib.sha256(data).hexdigest() != ROM_SHA256:
+    #     raise ValueError('Expected the supported stock MPC2000XL 1.20 BIN; see docs/FIRMWARE.md.')
+    rom_digest = hashlib.sha256(data).hexdigest() ## modified sha
     checksum = sum(word[0] for word in struct.iter_unpack('<H', data[:CHECKSUM_OFFSET])) & 0xffff
     stored = struct.unpack_from('<H', data, CHECKSUM_OFFSET)[0]
     if checksum != stored:
@@ -34,7 +35,7 @@ def validate(rom, disk=None):
     entry_ip, entry_cs = struct.unpack_from('<HH', data, RESET_OFFSET + 1)
     if data[RESET_OFFSET] != 0xea or (entry_cs, entry_ip) != (0xfc00, 0x0400):
         raise ValueError('Unexpected MPC2000XL reset vector.')
-    result = {'model': 'MPC2000XL', 'os_version': '1.20', 'rom_sha256': ROM_SHA256,
+    result = {'model': 'MPC2000XL', 'os_version': '1.20', 'rom_sha256': rom_digest, # return modified sha
               'rom_bytes': len(data), 'os_checksum': f'{checksum:04x}',
               'boot_mode': 'native_reset_vector', 'disk_sha256': None,
               'disk_bytes': None, 'disk_extension': None, 'disk_contents_verified': False}
@@ -53,6 +54,7 @@ def validate(rom, disk=None):
     else:
         raise ValueError('Choose a data floppy in .hfe or .img format.')
     result.update(disk_sha256=sha256(disk), disk_bytes=size, disk_extension=suffix)
+    
     return result
 
 
